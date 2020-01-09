@@ -1,13 +1,15 @@
 <?php
 
-use Laravel\Lumen\Testing\DatabaseMigrations;
-use Laravel\Lumen\Testing\DatabaseTransactions;
 use AlbertCht\Lumen\Testing\TestCase as TestCase;
 
 class WeekdaysBetweenDatetimesTest extends TestCase
 {
     /**
      * @dataProvider validParameterProvider
+     * @param $startDateTime
+     * @param $endDateTime
+     * @param $outputUnit
+     * @param $expectedResult
      * @return void
      */
     public function testValidRequests($startDateTime, $endDateTime, $outputUnit, $expectedResult)
@@ -33,8 +35,6 @@ class WeekdaysBetweenDatetimesTest extends TestCase
             ['2019-1-1 00:00:00', '2019-1-31 00:00:00', 'default', '22'],
             ['2019-1-12 00:00:00', '2019-1-31 00:00:00', '', '13'],
             ['2019-1-1 15:00:01', '2019-1-31 02:00:00', 'default', '22'],
-            ['2019-6-4', '2019-6-3', 'default', '-1'],
-            ['2019-6-4', '2019-6-3 EST', 'default', '-1'],
             ['2019-12-4', '2019-12-4', 'seconds', '0'],
             ['2019-12-4', '2019-12-5', 'seconds', '86400'],
             ['2019-12-1', '2019-12-8', 'seconds', '432000'],
@@ -48,6 +48,10 @@ class WeekdaysBetweenDatetimesTest extends TestCase
 
     /**
      * @dataProvider invalidParameterProvider
+     * @param $startDateTime
+     * @param $endDateTime
+     * @param $outputUnit
+     * @param $expectedErrorFields
      * @return void
      */
     public function testInvalidRequests($startDateTime, $endDateTime, $outputUnit, $expectedErrorFields)
@@ -72,6 +76,8 @@ class WeekdaysBetweenDatetimesTest extends TestCase
         return [
             // startDateTime, endDateTime, outputUnit, expected Result
             ['2019-1-1', 'not a date', 'default', ['endDateTime']],
+            ['2019-6-4', '2019-6-3', 'default', ['endDateTime']],
+            ['2019-6-4', '2019-6-3 EST', 'default', ['endDateTime']],
             ['', '', '', ['startDateTime', 'endDateTime']],
             ['2019-1-1', '2019-1-21', 'rainbow', ['outputUnit']],
         ];

@@ -1,7 +1,5 @@
 <?php
 
-use Laravel\Lumen\Testing\DatabaseMigrations;
-use Laravel\Lumen\Testing\DatabaseTransactions;
 use AlbertCht\Lumen\Testing\TestCase as TestCase;
 
 class HomepageTest extends TestCase

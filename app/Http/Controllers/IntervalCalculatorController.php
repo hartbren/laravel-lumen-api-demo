@@ -14,7 +14,10 @@ class IntervalCalculatorController extends Controller
      */
     public function daysBetweenDates(Request $request)
     {
-        return $this->commonBetweenDatesHandler($request, 'diffInDays');
+        $diffMethod = function (Carbon $startDate, $endDate) {
+            return $startDate->diffInDays($endDate, false);
+        };
+        return $this->commonBetweenDatesHandler($request, $diffMethod, 'convertDaysToOutputUnits');
     }
 
     /**
@@ -24,30 +27,64 @@ class IntervalCalculatorController extends Controller
      */
     public function weekdaysBetweenDates(Request $request)
     {
-        return $this->commonBetweenDatesHandler($request, 'diffInWeekdays');
+        $diffMethod = function (Carbon $startDate, Carbon $endDate) {
+            return $startDate->diffInWeekdays($endDate, false);
+        };
+        return $this->commonBetweenDatesHandler($request, $diffMethod, 'convertDaysToOutputUnits');
+    }
+
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    public function completeWeeksBetweenDates(Request $request)
+    {
+        // We will assume "complete weeks" means monday to sunday, and no partial weeks at the start or end
+        $diffMethod = function (Carbon $startDate, Carbon $endDate) {
+
+            if ($startDate->diffInDays($endDate) < 7) {
+                return 0;
+            }
+
+            if (!$startDate->isMonday()) {
+                $startDate = $startDate->modify('next monday');
+            }
+
+            if (!$endDate->isMonday()) {
+                $endDate = $endDate->modify('previous monday');
+            }
+
+            return $startDate->diffInWeeks($endDate, false);
+        };
+
+        return $this->commonBetweenDatesHandler($request, $diffMethod, 'convertWeeksToOutputUnits');
     }
 
 
     /**
      * @param Request $request
-     * @param string $diffMethodName
+     * @param callable $diffMethod
+     * @param string $convertOutputMethodName
      * @return \Illuminate\Http\JsonResponse
      * @throws \Illuminate\Validation\ValidationException
+     * @throws \Exception
+     * @throws \Exception
      */
-    public function commonBetweenDatesHandler(Request $request, string $diffMethodName)
+    public function commonBetweenDatesHandler(Request $request, callable $diffMethod, string $convertOutputMethodName)
     {
         $this->validate($request, $this->validationRules());
 
-        $startDate = new Carbon( $request->input('startDateTime'));
-        $endDate   = new Carbon( $request->input('endDateTime'));
+        $startDate = new Carbon($request->input('startDateTime'));
+        $endDate   = new Carbon($request->input('endDateTime'));
 
-        $diffInDays = $startDate->$diffMethodName($endDate, false);
+        $diffInDays = $diffMethod($startDate, $endDate);
 
-        $result = $this->convertOutputUnits($request->input('outputUnit'), $diffInDays);
+        $result = $this->$convertOutputMethodName($request->input('outputUnit'), $diffInDays);
 
         $response['result'] = $result;
 
-        return  response()->json($response);
+        return response()->json($response);
     }
 
 
@@ -61,15 +98,18 @@ class IntervalCalculatorController extends Controller
         return [
             'startDateTime' => [
                 'required',
+                'not_in:0',
                 function ($attribute, $value, $fail) {
                     $this->validateCarbonAcceptsDatetime($attribute, $value, $fail);
                 },
             ],
             'endDateTime'   => [
                 'required',
+                'not_in:0',
                 function ($attribute, $value, $fail) {
                     $this->validateCarbonAcceptsDatetime($attribute, $value, $fail);
                 },
+                'after_or_equal:startDateTime',
             ],
             'outputUnit'    => 'in:default,seconds,minutes,hours,years',
         ];
@@ -83,16 +123,17 @@ class IntervalCalculatorController extends Controller
     public function validateCarbonAcceptsDatetime($attribute, $value, $fail)
     {
         if (Carbon::hasRelativeKeywords($value)) {
-            $fail($attribute . ' is a relative datetime, only absolute datetimes are supported');
+            $fail($attribute . ' is not a valid datetime string. Try using YYYY-MM-DD HH:MM:SS, with an optional timezone if needed.');
         }
-
-        try {
-            $carbon = new Carbon($value);
-            if (!$carbon->isValid()) {
-                throw new \Exception('Invalid datetime string');
+        else {
+            try {
+                $carbon = new Carbon($value);
+                if (!$carbon->isValid()) {
+                    throw new \Exception('Invalid datetime string');
+                }
+            } catch (\Exception $e) {
+                $fail($attribute . ' is not a valid datetime string. Try using YYYY-MM-DD HH:MM:SS, with an optional timezone if needed.');
             }
-        } catch (\Exception $e) {
-            $fail($attribute . ' is not a valid datetime string. Try using YYYY-MM-DD HH:MM:SS, with an optional timezone if needed');
         }
     }
 
@@ -101,7 +142,7 @@ class IntervalCalculatorController extends Controller
      * @param int $diffInDays
      * @return false|float|int
      */
-    public function convertOutputUnits(string $outputUnit, int $diffInDays)
+    public function convertDaysToOutputUnits(string $outputUnit, int $diffInDays)
     {
         switch ($outputUnit) {
             case "seconds":
@@ -125,5 +166,19 @@ class IntervalCalculatorController extends Controller
                 $result = $diffInDays;
         }
         return $result;
+    }
+
+    /**
+     * @param string $outputUnit
+     * @param int $diffInWeeks
+     * @return false|float|int
+     */
+    public function convertWeeksToOutputUnits(string $outputUnit, int $diffInWeeks)
+    {
+        if ($outputUnit === '' || $outputUnit === 'default') {
+            return $diffInWeeks;
+        }
+
+        return $this->convertDaysToOutputUnits($outputUnit, $diffInWeeks * 7);
     }
 }
