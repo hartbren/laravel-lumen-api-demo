@@ -8,30 +8,24 @@ use Carbon\Carbon;
 class IntervalCalculatorController extends Controller
 {
     /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        //
-    }
-
-    /**
      * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
      * @throws \Illuminate\Validation\ValidationException
      */
     public function daysBetweenDates(Request $request)
     {
         $this->validate($request, $this->validationRules());
 
-        $startDate = new Carbon( $request->input('startDateTime'));
+        $startDate = new Carbon($request->input('startDateTime'));
+        $endDate   = new Carbon($request->input('endDateTime'));
 
-        $out['startDate'] = $startDate->format('H:i:s Y/m/d');
-        $out['startDate  TZ'] = $startDate->tzName;
-        $out['startDate  UTC Offset'] = $startDate->utcOffset();
+        $diffInDays = $startDate->diffInDays($endDate, false);
 
-        return  response()->json($out);
+        $result = $this->convertOutputUnits($request->input('outputUnit'), $diffInDays);
+
+        $response['result'] = $result;
+
+        return response()->json($response);
 
     }
 
@@ -40,7 +34,8 @@ class IntervalCalculatorController extends Controller
      *
      * @return array
      */
-    private function validationRules() {
+    public function validationRules()
+    {
         return [
             'startDateTime' => [
                 'required',
@@ -63,8 +58,9 @@ class IntervalCalculatorController extends Controller
      * @param $value
      * @param $fail
      */
-    private function validateCarbonAcceptsDatetime($attribute, $value, $fail) {
-        if( Carbon::hasRelativeKeywords($value)) {
+    public function validateCarbonAcceptsDatetime($attribute, $value, $fail)
+    {
+        if (Carbon::hasRelativeKeywords($value)) {
             $fail($attribute . ' is a relative datetime, only absolute datetimes are supported');
         }
 
@@ -73,10 +69,39 @@ class IntervalCalculatorController extends Controller
             if (!$carbon->isValid()) {
                 throw new \Exception('Invalid datetime string');
             }
-        }
-        catch(\Exception $e)
-        {
+        } catch (\Exception $e) {
             $fail($attribute . ' is not a valid datetime string. Try using YYYY-MM-DD HH:MM:SS, with an optional timezone if needed');
         }
+    }
+
+    /**
+     * @param string $outputUnit
+     * @param int $diffInDays
+     * @return false|float|int
+     */
+    public function convertOutputUnits(string $outputUnit, int $diffInDays)
+    {
+        switch ($outputUnit) {
+            case "seconds":
+                $result = $diffInDays * 24 * 60 * 60;
+                break;
+
+            case "minutes":
+                $result = $diffInDays * 24 * 60;
+                break;
+
+            case "hours":
+                $result = $diffInDays * 24;
+                break;
+
+            case "years":
+                $result = round($diffInDays / 365.25, 6); // 100 000ths of a year seems enough
+                break;
+
+            case "default":
+            default:
+                $result = $diffInDays;
+        }
+        return $result;
     }
 }
