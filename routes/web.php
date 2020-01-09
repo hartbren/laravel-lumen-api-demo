@@ -11,6 +11,14 @@
 |
 */
 
+/** @var \Laravel\Lumen\Routing\Router $router  */
+
 $router->get('/', function () use ($router) {
-    return $router->app->version();
+    return view('Homepage');
+});
+
+$router->group(['prefix' => 'api'], function () use ($router) {
+    /* TODO
+   $router->post('days-between-dates', ['as' => 'days-between-dates', 'uses' => 'IntervalDateCalculator@daysBetweenDates']);
+   */
 });

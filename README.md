@@ -1,24 +1,32 @@
-# Lumen PHP Framework
+# Laravel Lumen API Demo
 
-[![Build Status](https://travis-ci.org/laravel/lumen-framework.svg)](https://travis-ci.org/laravel/lumen-framework)
-[![Total Downloads](https://poser.pugx.org/laravel/lumen-framework/d/total.svg)](https://packagist.org/packages/laravel/lumen-framework)
-[![Latest Stable Version](https://poser.pugx.org/laravel/lumen-framework/v/stable.svg)](https://packagist.org/packages/laravel/lumen-framework)
-[![License](https://poser.pugx.org/laravel/lumen-framework/license.svg)](https://packagist.org/packages/laravel/lumen-framework)
+_2020-1-8 by Brendan Hart for Aligent Consulting_
 
-Laravel Lumen is a stunningly fast PHP micro-framework for building web applications with expressive, elegant syntax. We believe development must be an enjoyable, creative experience to be truly fulfilling. Lumen attempts to take the pain out of development by easing common tasks used in the majority of web projects, such as routing, database abstraction, queueing, and caching.
+Simple project to demonstrate ability to implement a simple Web API server for date calculations.
 
-## Official Documentation
+## Server Requirements
 
-Documentation for the framework can be found on the [Lumen website](https://lumen.laravel.com/docs).
+This project was developed on the following environment:
+- CentOS Linux release 7.7.1908
+- PHP 7.2.26
+- Extra PHP Modules: php-zip, php-mbstring, php-pecl-openssl 
 
-## Contributing
+However, it should be executable on any recent Linux with PHP >=7.2 (and those extra modules).
 
-Thank you for considering contributing to Lumen! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## How to run
 
-## Security Vulnerabilities
+After cloning the project from Github, change directory to 
+the \[install root\]/laravel-lumen-api-demo folder and execute:
 
-If you discover a security vulnerability within Lumen, please send an e-mail to Taylor Otwell at taylor@laravel.com. All security vulnerabilities will be promptly addressed.
+    php -S localhost:8000 -t public
 
-## License
+The API will be accessible on http://localhost:8000
 
-The Lumen framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+To access from an external system you'll need to either:
+- setup a "proper" webserver (details left an an exercise for the reader) 
+- first ensure the relevant port (8000?) is configured on the firewall to allow for external access (Centos uses iptables), and then run the php built-in server with a command something like this:
+
+
+       php -S <server ip address>:8000 -t public
+
+
