@@ -11,7 +11,7 @@
 |
 */
 
-/** @var \Laravel\Lumen\Routing\Router $router  */
+/** @var \Laravel\Lumen\Routing\Router $router */
 
 $router->get('/', function () use ($router) {
     return view('Homepage');
@@ -19,10 +19,10 @@ $router->get('/', function () use ($router) {
 
 $router->group(['prefix' => 'api'], function () use ($router) {
 
-   $router->post('days-between-dates', ['as' => 'days-between-dates', 'uses' => 'IntervalCalculatorController@daysBetweenDates']);
+    $router->post('days-between-dates', ['as' => 'days-between-dates', 'uses' => 'IntervalCalculatorController@daysBetweenDates']);
+    $router->post('weekdays-between-dates', ['as' => 'weekdays-between-dates', 'uses' => 'IntervalCalculatorController@weekdaysBetweenDates']);
 
     /* TODO
-    $router->post('days-between-dates', etc
-    $router->post('days-between-dates', etc
+    $router->post('complete-weeks-between-dates', etc
     */
 });

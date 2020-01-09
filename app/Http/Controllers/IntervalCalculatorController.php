@@ -14,20 +14,42 @@ class IntervalCalculatorController extends Controller
      */
     public function daysBetweenDates(Request $request)
     {
+        return $this->commonBetweenDatesHandler($request, 'diffInDays');
+    }
+
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    public function weekdaysBetweenDates(Request $request)
+    {
+        return $this->commonBetweenDatesHandler($request, 'diffInWeekdays');
+    }
+
+
+    /**
+     * @param Request $request
+     * @param string $diffMethodName
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    public function commonBetweenDatesHandler(Request $request, string $diffMethodName)
+    {
         $this->validate($request, $this->validationRules());
 
-        $startDate = new Carbon($request->input('startDateTime'));
-        $endDate   = new Carbon($request->input('endDateTime'));
+        $startDate = new Carbon( $request->input('startDateTime'));
+        $endDate   = new Carbon( $request->input('endDateTime'));
 
-        $diffInDays = $startDate->diffInDays($endDate, false);
+        $diffInDays = $startDate->$diffMethodName($endDate, false);
 
         $result = $this->convertOutputUnits($request->input('outputUnit'), $diffInDays);
 
         $response['result'] = $result;
 
-        return response()->json($response);
-
+        return  response()->json($response);
     }
+
 
     /**
      * Shared validation rules for the 3 API endpoints
