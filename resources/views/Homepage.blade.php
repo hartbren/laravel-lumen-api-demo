@@ -8,11 +8,11 @@
         <hr>
         <h2>Days between two datetimes</h2>
 
-        <form name="days-between-datetimes" method="POST" action="{{ route('days-between-dates')  }}">
-            <label for="startdate">Start Datetime (ISO 8601 format)</label>
+        <form id="days-between-datetimes" name="days-between-datetimes" method="POST" action="{{ route('days-between-dates')  }}">
+            <label for="startdate">Start Datetime</label>
             <input type="text" id="startdate" name="startDateTime" value="">
 
-            <label for="enddate">End Datetime (ISO 8601 format)</label>
+            <label for="enddate">End Datetime</label>
             <input type="text" id="enddate" name="endDateTime" value="">
 
             <label for="outputunit">Output Units (optional)</label>
@@ -29,12 +29,51 @@
 
         </form>
 
+        <p>Output:</p>
+        <div id="days-between-datetimes-output"></div>
+
         <hr>
         <h2>Week Days between two datetimes</h2>
 
         <hr>
         <h2>Complete Weeks between two datetimes</h2>
 
+
+    <script>
+
+        const formToJSON = elements => [].reduce.call(elements, (data, element) => {
+            data[element.name] = element.value;
+            return data;
+        }, {});
+
+        function sendData(form, endpoint, outputEl) {
+
+            const formdata = formToJSON( form.elements );
+
+            fetch(endpoint, {
+                method: 'POST', // or 'PUT'
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formdata),
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    outputEl.innerText = JSON.stringify(data);
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+        }
+
+        let form_daysBetweenDatetimes =  document.getElementById('days-between-datetimes');
+
+        form_daysBetweenDatetimes.addEventListener( "submit", function ( event ) {
+            event.preventDefault();
+            let outputEl = document.getElementById("days-between-datetimes-output");
+            sendData(form_daysBetweenDatetimes, form_daysBetweenDatetimes.action, outputEl );
+        } );
+    </script>
 
     </body>
 </html>

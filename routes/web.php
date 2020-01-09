@@ -18,7 +18,11 @@ $router->get('/', function () use ($router) {
 });
 
 $router->group(['prefix' => 'api'], function () use ($router) {
+
+   $router->post('days-between-dates', ['as' => 'days-between-dates', 'uses' => 'IntervalCalculatorController@daysBetweenDates']);
+
     /* TODO
-   $router->post('days-between-dates', ['as' => 'days-between-dates', 'uses' => 'IntervalDateCalculator@daysBetweenDates']);
-   */
+    $router->post('days-between-dates', etc
+    $router->post('days-between-dates', etc
+    */
 });
