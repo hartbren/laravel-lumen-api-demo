@@ -39,3 +39,11 @@ OR
   `php -S <server ip address>:8000 -t public`
 
 
+## Notes
+
+This project uses the following open source components:
+- Laravel Lumen (minimalist API framework)
+- nesbot/Carbon (date/time manipulation package)
+- albertcht/lumen-testing (includes many Laravel testing helpers that are missing from Lumen)
+- Pure.io CSS framework
+
